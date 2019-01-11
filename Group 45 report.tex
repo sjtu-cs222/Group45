@@ -1,0 +1,84 @@
+\documentclass[a4paper,man,natbib]{apa6}
+
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\title{DouDiZhu AI Design Report}
+\author{Zheng Yunkai, Wang Yujie}
+\affiliation{516030910490. 516030910486}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+We have created a simple AI that can play Chinese popular game calls DouDiZhu. This AI can play with real people and try to win from the game, not just follow people’s play. It can decides whether call landlord, play actively, play passively and simply cooperate with its partner. This AI can analyze its cards in hand and group/regroup the cards, in order to get the highest reward.
+
+
+\section{Background}
+
+In China, DouDiZhu is very poplar among people of all ages because of the simple rules and randomness. We all know that alpha Go is an excellent AI in the field of Go. But we almost can’t find a good AI in DouDiZhu. So we want to build a model of algorithm to give people an opportunity to challenge himself and improve the users’ ability of DouDiZhu. And our goal is to construct an AI which can play with real people, hopefully, it can be passed for genuine one.
+
+
+\section{Related works}
+
+\begin{enumerate}
+\item the most related work is probably The  Happy DouDiZhu android game of Tencent company , which has a similar AI , it will assist players practice their playing skills while not with real man, but this work is invisible to us. 
+\item  the second related work may be the Texas poker , although with rather different rules, it still owns  some game theory knowledge to compete with real people, which we can learn from.
+\end{enumerate}
+
+\section{motivation}
+\begin{enumerate}
+\item friends of my like playing DouDiZhu, and they find it is always hard to scrape together 3 players, if we have some AI for this poker game, then numbers of players is no longer a problem. 
+\item  if not playing with friends, one can always play with AIs to practice their skills of playing. 
+\item  Third, the current game AI is not intelligent enough. For example, It will feed the smallest card while there exists a straight. So our goal is to construct an AI which can play with real people, hopefully, it can be passed for genuine one
+\end{enumerate}
+
+\section{problem formulation}
+We divide this problem into the following subproblems, 
+\begin{enumerate}
+\item  call the landlord or not. Landlord is called in the beginning of the game, to decide who is the landlord and other two automatically become friends against him. 
+\item  during the playing , there two main kinds of playing ,passive play along and active play. Active play means it’s your turn to play first, you can play any groups of cards you want , as long as the cards indeed comprise a group. While passive play along means you are not the first to play cards , so you have to follow the upstream player’s rule to play  or you can bomb him.
+\item  actually, even for passive play along, there are two different strategies, like play along with friend and play along with enemy, it’s different because if you are playing along with friend, you can choose not to play in order to let him play cards more quickly to win the game, however, if the enemy encounted, you will do everything you can to stop him playing smoothly. 
+\end{enumerate}
+The above 3 subproblems are divided according to the game playing order, the following 2 problems are divided by how to generate a best card to play.
+That is , analyze the cards and group the cards, in this game, you can play cards only in one group at a time, a group is associated with certain rules,  that’s why if we want to analyze the cards, we need to group the cards first, then we can adjust the group cards, or regroup the cards, to adapt to the rule now is going on or to  intercept the enemy,
+
+\section{Proposed Methods}
+Our main idea is first analyse cards in hand and divide cards into groups. Then, in the beginning, decide whether to call the landlord. During the game, there are 2 main play modes: active play and passive play, passive play could be further divided into play along with the enemy and play along with friend. 
+
+Analyse card: First, we transform No. 0-53 cards into value 3-17, ex. K is transformed into 13, A is transformed into 14, Joker is transformed into 16,17. Then count player’s cards and change it into value-numbers pairs, ex. (14,2) means player has 2 cards of A. Afterwards, we gather some related cards into a group, ex. (16,1), (17,1)means owning both jokers, that generates the biggest bomb and add it into ‘analyse’. We design an analyse order as follows: the biggest bomb -> bomb -> single sequence -> double sequence -> three sequence(including just three ) -> pair -> single.  Then try some more complicated groups like three plus,airplane. After analyzing cards, hand cards is transformed into a few groups, then AI could play these groups instead of some cards, but of course, AI will analyse cards again after playing and try to disassemble groups if no matching groups when passive playing. (For example, 34567 and 888 groups could be disassembled and regroup into 345678 and 88, it’s decided by the other players.)
+
+Priority Principles of disassembling cards:
+
+1. into single: single sequence bigger than 5 > a three > a pair
+
+2. into pairs: a three > three sequence bigger than 3
+
+3. into single sequence : longer sequence.
+
+4. into three or threeplus : three sequence bigger than 3
+
+5. into airplain : three sequence number or value is bigger .
+
+After the game starts, AI first decides whether call the landlord or not.After analysing , we set cards into some value, add the value, if bigger than the biggest threshold value, than call the landlord and set 3 points, if bigger than the second biggest threshold value, then call and set 2points.
+
+Play the cards –active play: Analyse the cards first. If only one group to play, play it and win. If remains two groups to play, first exam the rest cards in your enemy’s hand. If you have the group that  is bigger than any other one, play it first and the next turn play the other group. If not, play the group which is bigger than in group type, ex. Airplane is the biggest in all the group types. The third situation, you have more than three groups, then play it in Single, Double, Doublesequence, Singlesequence, Three, Threeplus, Airplane order. There exists cooperation which is discussed later.
+
+Play the cards –passive play: Also analyse the cards. Play along if you has the same group and larger than the former play, if not, check the last player is enemy or friend, to decide whether to disassemble cards in order to get on top of the enemy. And if the enemy has only one card to go, play it with bomb.
+
+Play the cards – cooperation in passive play: If the friend is the last player and the enemy passed for his turn, then not play any cards, let friend go on. If friend is the last player, and groups in hand is bigger than 2, then play along cards with value smaller than the threshold value, in case to beat the friend, ex. Friend play 4, you will not play A or bigger, but will play J if it belongs to your single card groups. If groups in hand is smaller than 2,then make sure myself is the first to go.
+
+
+
+\section{experiment}
+Actually our time spent on UI designs is as much as the algorithm itself. We first found some models of UI related to DouDiZhu. But we didn’t find the UI which can match our algorithm very good. So we designed the UI by ourselves. Although our UI is not perfect but we realize the functions that we need. It can handle different situations such as call landlord, active play and passive play. It can also do some simple cooperation with its partner. After we finish the algorithm, we play the game to test whether the AI can deal with the situation correctly.
+
+\section{conclusion}
+We finally create a game of DouDiZhu which users can fight with two AIs. AI can do active play, passive play and cooperate in passive play. But our project still has a lot space to improve , like recording the wasted card and analyzing what cards may in his hand, but we didn’t find a appropriate entry using neural network, we will keep digging on this. After all, this poker game is about much conjecture of other people’s mind. Thanks for teacher’s and teaching assistants’ instructions and help.
+
+
+\end{document}
